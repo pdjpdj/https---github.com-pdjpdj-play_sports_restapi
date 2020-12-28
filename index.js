@@ -2,7 +2,9 @@ const express = require('express'),
   app = express(),
   mysql = require('mysql'), // import mysql module
   cors = require('cors'),
-  bodyParser = require('body-parser');
+  bodyParser = require('body-parser'),
+  fs = require('fs');
+
 
 const startRouter = require('./routes/quickstart');
 const fetchRouter = require('./routes/fetch');
@@ -11,11 +13,13 @@ const searchRouter = require('./routes/search');
 
 
 // setup database
-db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '$uz1sGreat',
-  database: 'mydb'
+fs.readFile('db_secret.json', (err, content) => {
+  if (err) {
+    console.log('Error loading db secret file: ' + err);
+    return;
+  }
+  console.log(JSON.parse(content));
+  db = mysql.createConnection(JSON.parse(content));
 });
 
 const server = {

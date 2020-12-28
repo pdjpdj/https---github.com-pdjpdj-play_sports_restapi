@@ -10,8 +10,18 @@ const TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 const TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
 
+let filters = []
+
+fs.readFile('search_filter', 'utf8', (err, data) => {
+  if (err) {
+    console.log('Error reading filters: ' + err);
+    return;
+  }
+  filters = data.toString().split('\n');
+})
+
 // Load client secrets from a local file.
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+fs.readFile('client_secret.json', (err, content) => {
   if (err) {
     console.log('Error loading client secret file: ' + err);
     return;
@@ -34,7 +44,7 @@ function authorize(credentials, callback) {
   const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
   // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, function(err, token) {
+  fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) {
       getNewToken(oauth2Client, callback);
     } else {
@@ -62,9 +72,9 @@ function getNewToken(oauth2Client, callback) {
     input: process.stdin,
     output: process.stdout
   });
-  rl.question('Enter the code from that page here: ', function(code) {
+  rl.question('Enter the code from that page here: ', (code) => {
     rl.close();
-    oauth2Client.getToken(code, function(err, token) {
+    oauth2Client.getToken(code, (err, token) => {
       if (err) {
         console.log('Error while trying to retrieve access token', err);
         return;
@@ -102,11 +112,7 @@ function storeToken(token) {
  */
 function getData(auth) {
   const usernames = ['GlobalCyclingNetwork', 'globalmtb'];
-  const filters = ['pro',
-    'matt stephens',
-    '5',
-    'Mitchelton-Scott',
-    'Dubai stage'];
+
   const service = google.youtube('v3');
   
   usernames.forEach(username => 
@@ -114,7 +120,7 @@ function getData(auth) {
       auth: auth,
       part: 'snippet,contentDetails,statistics',
       forUsername: username
-    }, function(err, response) {
+    }, (err, response) => {
       if (err) {
         console.log('The API returned an error: ' + err);
         return;
@@ -141,7 +147,7 @@ function getVideos(auth, id, filter) {
     channelId: id,
     q: filter,
     maxResults: 500
-  }, function(err, response) {
+  }, (err, response) => {
     if (err) {
       console.log('Search error: ' + err);
       return;

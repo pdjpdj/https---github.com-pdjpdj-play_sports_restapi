@@ -3,6 +3,9 @@ const readline = require('readline');
 const {google} = require('googleapis');
 const OAuth2 = google.auth.OAuth2;
 
+const express = require('express'),
+  router = express.Router();
+
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/youtube-nodejs-quickstart.json
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
@@ -11,24 +14,49 @@ const TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
 const TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
 
 let filters = []
+let resp;
 
-fs.readFile('search_filter', 'utf8', (err, data) => {
-  if (err) {
-    console.log('Error reading filters: ' + err);
-    return;
-  }
-  filters = data.toString().split('\n');
-})
+router.get('/videos', (req, res) => {
+  resp = res;
+  fs.readFile('search_filter', 'utf8', (err, data) => {
+    if (err) {
+      console.log('Error reading filters: ' + err);
+      return;
+    }
+    filters = data.toString().split('\n');
+  })
+  
+  // Load client secrets from a local file.
+  fs.readFile('client_secret.json', (err, content) => {
+    if (err) {
+      console.log('Error loading client secret file: ' + err);
+      return;
+    }
+    // Authorize a client with the loaded credentials, then call the YouTube API.
+    authorize(JSON.parse(content), getData);
 
-// Load client secrets from a local file.
-fs.readFile('client_secret.json', (err, content) => {
-  if (err) {
-    console.log('Error loading client secret file: ' + err);
-    return;
-  }
-  // Authorize a client with the loaded credentials, then call the YouTube API.
-  authorize(JSON.parse(content), getData);
+    // Test the DB connection:
+    // runDummy();
+  });
 });
+
+function runDummy() {
+  let sql = `INSERT INTO videos(id, title, date) VALUES (?)`;
+  const now = new Date();
+  let values = [
+    now.getMilliseconds(),
+    `test ${now.getMilliseconds()}`,
+    now
+  ];
+  db.query(sql, [values], (err, data, fields) => {
+    if (err) throw err;
+    resp.json({
+      status: 200,
+      message: "New videos added successfully"
+    })
+  });
+}
+
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -134,6 +162,15 @@ function getData(auth) {
                     channels[0].id,
                     channels[0].snippet.title,
                     channels[0].statistics.viewCount);
+
+        let sql = `INSERT INTO channels(id, channel_name) VALUES (?)`;
+        let values = [
+          channels[0].id,
+          channels[0].snippet.title
+        ];
+        db.query(sql, [values], (err, data, fields) => {
+          if (err) throw err;
+        });
         filters.forEach( search => getVideos(auth, channels[0].id, search));
       }
   }));
@@ -143,7 +180,7 @@ function getVideos(auth, id, filter) {
   const service = google.youtube('v3');
   service.search.list({
     auth: auth,
-    part: 'snippet',
+    part: 'id,snippet',
     channelId: id,
     q: filter,
     maxResults: 500
@@ -156,9 +193,24 @@ function getVideos(auth, id, filter) {
     if (search.length === 0) {
       console.log('nothing from the search');
     } else {
+      let sql = `INSERT INTO videos(id, title, date) VALUES (?)`;
       search.forEach(video => {
-        console.log(`Search: ${filter} Video name: ${video.snippet.title}, published: ${video.snippet.publishedAt}`);
+        let values = [
+          video.id.videoId,
+          video.snippet.title,
+          video.snippet.publishedAt
+        ];
+        db.query(sql, [values], (err, data, fields) => {
+          if (err) throw err;
+        });
+        console.log(`Search: ${filter} Video name: ${video.snippet.title}, published: ${video.snippet.publishedAt}, id: ${video.id.videoId}`);
       });
     }
+    resp.json({
+      status: 200,
+      message: "New videos added successfully"
+    });
   });
 }
+
+module.exports = router;

@@ -1,0 +1,19 @@
+{
+  "name": "play_sports_restapi",
+  "version": "1.0.0",
+  "description": "Developer test for Play Sports, will create restAPIs that will populate a mySQL db, then allow a fetch, gets by id, removes by id and searches using a search term.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Philip Jones",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "google-auth-library": "^6.1.3",
+    "googleapis": "^66.0.0",
+    "mysql": "^2.18.1"
+  }
+}

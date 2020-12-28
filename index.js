@@ -4,7 +4,9 @@ const express = require('express'),
   cors = require('cors'),
   bodyParser = require('body-parser');
 
-const startRouter = require('./quickstart');
+const startRouter = require('./routes/quickstart');
+const fetchRouter = require('./routes/fetch');
+const removeRouter = require('./routes/remove');
 
 
 // setup database
@@ -25,6 +27,8 @@ app.use(bodyParser.json());
 
 //use routes
 app.use('/quickstart', startRouter);
+app.use('/fetch', fetchRouter);
+app.use('/remove', removeRouter);
 
 
 // starting the server

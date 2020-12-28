@@ -189,7 +189,7 @@ function getVideos(auth, id, filter) {
     part: 'id,snippet',
     channelId: id,
     q: filter,
-    maxResults: 500
+    maxResults: 100
   }, (err, response) => {
     if (err) {
       console.log('Search error: ' + err);

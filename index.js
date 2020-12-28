@@ -18,7 +18,6 @@ fs.readFile('db_secret.json', (err, content) => {
     console.log('Error loading db secret file: ' + err);
     return;
   }
-  console.log(JSON.parse(content));
   db = mysql.createConnection(JSON.parse(content));
 });
 

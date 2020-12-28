@@ -41,19 +41,24 @@ router.get('/videos', (req, res) => {
 });
 
 function runDummy() {
-  let sql = `INSERT INTO videos(id, title, date) VALUES (?)`;
-  const now = new Date();
-  let values = [
-    now.getMilliseconds(),
-    `test ${now.getMilliseconds()}`,
-    now
-  ];
-  db.query(sql, [values], (err, data, fields) => {
-    if (err) throw err;
-    resp.json({
-      status: 200,
-      message: "New videos added successfully"
-    })
+  let sql = `
+    INSERT INTO videos(id, title, date) SELECT ?
+    WHERE NOT EXISTS (SELECT title FROM videos WHERE id = ?) LIMIT 1
+    `;
+  for(let i=0; i < 10; i++) {
+    const now = new Date();
+    let values = [
+      now.getMilliseconds(),
+      `test ${now.getMilliseconds()}`,
+      now
+    ];
+    db.query(sql, [values, now.getMilliseconds()], (err, data, fields) => {
+      if (err) throw err;
+    });
+  }
+  resp.json({
+    status: 200,
+    message: "New videos added successfully"
   });
 }
 
@@ -163,12 +168,13 @@ function getData(auth) {
                     channels[0].snippet.title,
                     channels[0].statistics.viewCount);
 
-        let sql = `INSERT INTO channels(id, channel_name) VALUES (?)`;
+        let sql = `INSERT INTO channels(id, channel_name) SELECT ?
+        WHERE NOT EXISTS (SELECT title FROM channels WHERE id = ?) LIMIT 1`;
         let values = [
           channels[0].id,
           channels[0].snippet.title
         ];
-        db.query(sql, [values], (err, data, fields) => {
+        db.query(sql, [values, channels[0].id], (err, data, fields) => {
           if (err) throw err;
         });
         filters.forEach( search => getVideos(auth, channels[0].id, search));
@@ -193,14 +199,15 @@ function getVideos(auth, id, filter) {
     if (search.length === 0) {
       console.log('nothing from the search');
     } else {
-      let sql = `INSERT INTO videos(id, title, date) VALUES (?)`;
+      let sql = `INSERT INTO videos(id, title, date) SELECT ?
+      WHERE NOT EXISTS (SELECT title FROM videos WHERE id = ?) LIMIT 1`;
       search.forEach(video => {
         let values = [
           video.id.videoId,
           video.snippet.title,
           video.snippet.publishedAt
         ];
-        db.query(sql, [values], (err, data, fields) => {
+        db.query(sql, [values, video.id.videoId], (err, data, fields) => {
           if (err) throw err;
         });
         console.log(`Search: ${filter} Video name: ${video.snippet.title}, published: ${video.snippet.publishedAt}, id: ${video.id.videoId}`);

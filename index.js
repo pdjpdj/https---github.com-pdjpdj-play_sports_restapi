@@ -7,6 +7,7 @@ const express = require('express'),
 const startRouter = require('./routes/quickstart');
 const fetchRouter = require('./routes/fetch');
 const removeRouter = require('./routes/remove');
+const searchRouter = require('./routes/search');
 
 
 // setup database
@@ -29,6 +30,7 @@ app.use(bodyParser.json());
 app.use('/quickstart', startRouter);
 app.use('/fetch', fetchRouter);
 app.use('/remove', removeRouter);
+app.use('/search', searchRouter);
 
 
 // starting the server

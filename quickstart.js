@@ -1,14 +1,14 @@
-var fs = require('fs');
-var readline = require('readline');
-var {google} = require('googleapis');
-var OAuth2 = google.auth.OAuth2;
+const fs = require('fs');
+const readline = require('readline');
+const {google} = require('googleapis');
+const OAuth2 = google.auth.OAuth2;
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/youtube-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
+const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
+const TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
+const TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
 
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', function processClientSecrets(err, content) {
@@ -28,10 +28,10 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
  * @param {function} callback The callback to call with the authorized client.
  */
 function authorize(credentials, callback) {
-  var clientSecret = credentials.installed.client_secret;
-  var clientId = credentials.installed.client_id;
-  var redirectUrl = credentials.installed.redirect_uris[0];
-  var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+  const clientSecret = credentials.installed.client_secret;
+  const clientId = credentials.installed.client_id;
+  const redirectUrl = credentials.installed.redirect_uris[0];
+  const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, function(err, token) {
@@ -53,12 +53,12 @@ function authorize(credentials, callback) {
  *     client.
  */
 function getNewToken(oauth2Client, callback) {
-  var authUrl = oauth2Client.generateAuthUrl({
+  const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES
   });
   console.log('Authorize this app by visiting this url: ', authUrl);
-  var rl = readline.createInterface({
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
@@ -101,13 +101,14 @@ function storeToken(token) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 function getData(auth) {
-  var usernames = ['GlobalCyclingNetwork', 'globalmtb'];
-  var filters = ['pro',
+  const usernames = ['GlobalCyclingNetwork', 'globalmtb'];
+  const filters = ['pro',
     'matt stephens',
     '5',
     'Mitchelton-Scott',
     'Dubai stage'];
-  var service = google.youtube('v3');
+  const service = google.youtube('v3');
+  
   usernames.forEach(username => 
     service.channels.list({
       auth: auth,
@@ -118,7 +119,7 @@ function getData(auth) {
         console.log('The API returned an error: ' + err);
         return;
       }
-      var channels = response.data.items;
+      const channels = response.data.items;
       if (channels.length == 0) {
         console.log('No channel found.');
       } else {
@@ -133,8 +134,7 @@ function getData(auth) {
 }
 
 function getVideos(auth, id, filter) {
-  var service = google.youtube('v3');
-  console.log('Getting videos');
+  const service = google.youtube('v3');
   service.search.list({
     auth: auth,
     part: 'snippet',
@@ -146,7 +146,7 @@ function getVideos(auth, id, filter) {
       console.log('Search error: ' + err);
       return;
     }
-    var search = response.data.items;
+    const search = response.data.items;
     if (search.length === 0) {
       console.log('nothing from the search');
     } else {

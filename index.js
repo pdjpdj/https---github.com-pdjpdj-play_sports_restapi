@@ -12,9 +12,7 @@ db = mysql.createConnection({
   database: 'mydb'
 });
 
-//youTube API key: AIzaSyD6aC_SIbm2xIS_RRwMps3--T8y3KqWJJ4
-
-var server = {
+const server = {
   port: 4040
 };
 

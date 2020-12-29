@@ -15,6 +15,8 @@ const TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
 
 let filters = []
 let resp;
+let channelDBId = 0;
+let videoDBId = 0;
 
 router.get('/videos', (req, res) => {
   resp = res;
@@ -162,6 +164,7 @@ function getData(auth) {
       if (channels.length == 0) {
         console.log('No channel found.');
       } else {
+        channelDBId++;
         console.log('This channel\'s ID is %s. Its title is \'%s\', and ' +
                     'it has %s views.',
                     channels[0].id,
@@ -169,17 +172,21 @@ function getData(auth) {
                     channels[0].statistics.viewCount);
 
         let sql = `INSERT INTO channels(id, channel_name) SELECT ?
-        WHERE NOT EXISTS (SELECT title FROM channels WHERE id = ?) LIMIT 1`;
+        WHERE NOT EXISTS (SELECT channel_name FROM channels WHERE id = ?) LIMIT 1`;
         let values = [
-          channels[0].id,
+          channelDBId,
           channels[0].snippet.title
         ];
-        db.query(sql, [values, channels[0].id], (err, data, fields) => {
+        db.query(sql, [values, channelDBId], (err, data, fields) => {
           if (err) throw err;
         });
         filters.forEach( search => getVideos(auth, channels[0].id, search));
       }
   }));
+  resp.json({
+    status: 200,
+    message: "New videos added successfully"
+  });
 }
 
 function getVideos(auth, id, filter) {
@@ -202,21 +209,18 @@ function getVideos(auth, id, filter) {
       let sql = `INSERT INTO videos(id, title, date) SELECT ?
       WHERE NOT EXISTS (SELECT title FROM videos WHERE id = ?) LIMIT 1`;
       search.forEach(video => {
+        videoDBId++;
         let values = [
-          video.id.videoId,
-          video.snippet.title,
-          video.snippet.publishedAt
+          videoDBId,
+          video.snippet.title.slice(0, 99),
+          video.snippet.publishedAt.slice(0, 19).replace('T', ' ')
         ];
-        db.query(sql, [values, video.id.videoId], (err, data, fields) => {
+        db.query(sql, [values, videoDBId], (err, data, fields) => {
           if (err) throw err;
         });
-        console.log(`Search: ${filter} Video name: ${video.snippet.title}, published: ${video.snippet.publishedAt}, id: ${video.id.videoId}`);
+        console.log(`Search: ${filter} Video name: ${video.snippet.title}, published: ${video.snippet.publishedAt.slice(0, 19).replace('T', ' ')}, id: ${video.id.videoId}`);
       });
     }
-    resp.json({
-      status: 200,
-      message: "New videos added successfully"
-    });
   });
 }
 
